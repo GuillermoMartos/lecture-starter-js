@@ -12,13 +12,16 @@ export async function fight(firstFighter, secondFighter) {
 
     return new Promise(resolve => {
         // resolve the promise with the winner when fight is over
-
-        if (firstFightingFighter.getHealthStatus() < 0) {
-            resolve(secondFighter);
-        }
-        if (secondFightingFighter.getHealthStatus() < 0) {
-            resolve(firstFighter);
-        }
+        const timer = setInterval(() => {
+            if (firstFightingFighter.getHealthStatus() <= 0) {
+                clearInterval(timer);
+                resolve(secondFighter);
+            }
+            if (secondFightingFighter.getHealthStatus() <= 0) {
+                resolve(firstFighter);
+                clearInterval(timer);
+            }
+        }, 100);
     });
 }
 
