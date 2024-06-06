@@ -59,5 +59,7 @@
 .arena___health-bar {
   height: 100%;
   width: 100%;
+  transition: width 100ms;
+  transform-origin: right;
   background-color: #ebd759;
 }

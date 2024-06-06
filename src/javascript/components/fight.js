@@ -2,13 +2,17 @@
 import controls from '../../constants/controls';
 
 export async function fight(firstFighter, secondFighter) {
-    /*     const [firstFighterHealthIndicator, secondFighterHealthIndicator] = getHealthWidthIndicators(
-        firstFighter,
-        secondFighter
-    ); */
+    const [firstFighterHealthIndicator, secondFighterHealthIndicator] =
+        document.querySelectorAll('.arena___health-bar');
+    console.warn('divs!', firstFighterHealthIndicator, secondFighterHealthIndicator);
     const firstFightingFighter = createFigthingFigther(firstFighter);
     const secondFightingFighter = createFigthingFigther(secondFighter);
-    handleFightControls(firstFightingFighter, secondFightingFighter);
+    handleFightControls({
+        firstFightingFighter,
+        firstFighterHealthIndicator,
+        secondFightingFighter,
+        secondFighterHealthIndicator
+    });
 
     return new Promise(resolve => {
         // resolve the promise with the winner when fight is over
@@ -43,19 +47,20 @@ export function getDamage(attacker, defender) {
     // return damage
     const attackResult = getHitPower(attacker) - getBlockPower(defender);
     return attackResult;
-    // change width for arena___health-indicator
 }
 
-function handleFightControls(firstFightingFighter, secondFightingFighter) {
+function handleFightControls(playersContent) {
+    const { firstFightingFighter, firstFighterHealthIndicator, secondFightingFighter, secondFighterHealthIndicator } =
+        playersContent;
     const pressedKeys = new Set();
     function keyDownPressed(event) {
         if (!pressedKeys.has(event.code)) {
             switch (event.code) {
                 case controls.PlayerOneAttack:
-                    handleAttackScenario(firstFightingFighter, secondFightingFighter);
+                    handleAttackScenario(firstFightingFighter, [secondFightingFighter, secondFighterHealthIndicator]);
                     break;
                 case controls.PlayerTwoAttack:
-                    handleAttackScenario(secondFightingFighter, firstFightingFighter);
+                    handleAttackScenario(secondFightingFighter, [firstFightingFighter, firstFighterHealthIndicator]);
                     break;
                 case controls.PlayerOneBlock:
                     firstFightingFighter.activateDefending();
@@ -84,11 +89,15 @@ function handleFightControls(firstFightingFighter, secondFightingFighter) {
 
 function createFigthingFigther(fighter) {
     let fighterHealth = fighter.health;
+    const startHealthFighter = fighter.health;
     const { defense: fighterDefensePower, attack: fighterAttackPower } = fighter;
     let defending = false;
     return {
         getHealthStatus: () => {
             return fighterHealth;
+        },
+        getStartingHealth: () => {
+            return startHealthFighter;
         },
         getHurt: damage => {
             fighterHealth -= damage;
@@ -111,10 +120,17 @@ function createFigthingFigther(fighter) {
     };
 }
 
-function handleAttackScenario(attacker, defender) {
+function handleAttackScenario(attacker, defenderContent) {
+    const [defender, defenderDivHealth] = defenderContent;
     if (defender.getDefendingStatus() === false) {
         const result = getDamage(attacker.getfighterAttackPower(), defender.getfighterDefensePower());
         if (result > 0) {
+            console.warn(defender.getHealthStatus());
+            const healthPercentage = (defender.getHealthStatus() / defender.getStartingHealth()) * 100;
+            defenderDivHealth.style.width = `${healthPercentage}%`;
+            if (healthPercentage < 15) {
+                defenderDivHealth.style.backgroundColor = 'red';
+            }
             defender.getHurt(result);
         }
     }
