@@ -1,5 +1,18 @@
 import createElement from '../helpers/domHelper';
 
+function createConfimationFighterButton(fighter) {
+    const confirmFighterButton = createElement({
+        tagName: 'button',
+        className: 'preview-container___fight-btn'
+    });
+    confirmFighterButton.innerText = `Confirm ${fighter.name}`;
+    const onClick = () => {
+        fighter.setConfirmed();
+    };
+    confirmFighterButton.addEventListener('click', onClick, false);
+    return confirmFighterButton;
+}
+
 export function createFighterPreview(fighter, position) {
     const positionClassName = position === 'right' ? 'fighter-preview___right' : 'fighter-preview___left';
     const fighterElement = createElement({
@@ -10,8 +23,9 @@ export function createFighterPreview(fighter, position) {
     // todo: show fighter info (image, name, health, etc.)
     if (fighter) {
         const previewFighterDivWrapper = createElement({ tagName: 'div', className: 'preview_figther_wrap' });
+        const confirmFighterButton = createConfimationFighterButton(fighter);
         // eslint-disable-next-line no-use-before-define
-        previewFighterDivWrapper.append(...createFighterPreviewData(fighter));
+        previewFighterDivWrapper.append(...createFighterPreviewData(fighter), confirmFighterButton);
         fighterElement.append(previewFighterDivWrapper);
     }
     return fighterElement;

@@ -12,16 +12,43 @@ export async function getFighterInfo(fighterId) {
         return fighterDetailsMap.get(fighterId);
     }
     const fighterDetailsInfo = await fighterService.getFighterDetails(fighterId);
+    fighterDetailsInfo.confirmed = false;
+    fighterDetailsInfo.setConfirmed = () => {
+        fighterDetailsInfo.confirmed = true;
+    };
     fighterDetailsMap.set(fighterId, fighterDetailsInfo);
     return fighterDetailsInfo;
 }
 
+function checkFightersReady(selectedFighters) {
+    return (
+        selectedFighters.filter(Boolean).length === 2 && selectedFighters.every(fighter => fighter.confirmed === true)
+    );
+}
+
+function createAndDisplayFightErrorMessage(versusBlock) {
+    const messageSign = createElement({
+        tagName: 'span',
+        className: 'preview-container___fight-btn',
+        attributes: { style: 'max-width: 20%; position: absolute; font-size:14px' }
+    });
+    messageSign.innerText = 'Select and confirm all fighters';
+    versusBlock.append(messageSign);
+    setTimeout(() => {
+        versusBlock.removeChild(messageSign);
+    }, 3000);
+}
+
 function startFight(selectedFighters) {
-    renderArena(selectedFighters);
+    if (checkFightersReady(selectedFighters)) {
+        renderArena(selectedFighters);
+    } else {
+        const versusBlock = document.querySelector('.preview-container___versus-block');
+        createAndDisplayFightErrorMessage(versusBlock);
+    }
 }
 
 function createVersusBlock(selectedFighters) {
-    const canStartFight = selectedFighters.filter(Boolean).length === 2;
     const onClick = () => startFight(selectedFighters);
     const container = createElement({ tagName: 'div', className: 'preview-container___versus-block' });
     const image = createElement({
@@ -29,10 +56,10 @@ function createVersusBlock(selectedFighters) {
         className: 'preview-container___versus-img',
         attributes: { src: versusImg }
     });
-    const disabledBtn = canStartFight ? '' : 'disabled';
     const fightBtn = createElement({
         tagName: 'button',
-        className: `preview-container___fight-btn ${disabledBtn}`
+        className: 'preview-container___fight-btn',
+        attributes: { id: 'fight_btn' }
     });
 
     fightBtn.addEventListener('click', onClick, false);
