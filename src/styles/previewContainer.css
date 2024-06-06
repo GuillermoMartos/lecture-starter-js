@@ -31,6 +31,19 @@
   box-shadow: 6px 6px 7px 0px rgba(0, 0, 0, 0.75);
 }
 
+.btns_wrapper {
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.custom_choose {
+  padding: 0;
+  margin: 0;
+  font-size: 15px;
+}
+
 .preview-container___fight-btn.disabled {
   opacity: 0;
 }
@@ -40,6 +53,7 @@
   gap: 2px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   color: white;
   text-align: center;
   font-size: larger;

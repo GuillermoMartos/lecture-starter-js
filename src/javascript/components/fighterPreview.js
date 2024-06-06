@@ -1,16 +1,32 @@
 import createElement from '../helpers/domHelper';
 
 function createConfimationFighterButton(fighter) {
+    const buttonsDivWrapper = createElement({
+        tagName: 'div',
+        className: 'btns_wrapper'
+    });
+    const chooseAgainButton = createElement({
+        tagName: 'button',
+        className: 'preview-container___fight-btn custom_choose'
+    });
+    chooseAgainButton.innerText = `Choose again`;
+    const onClickReload = () => {
+        window.location.reload();
+    };
     const confirmFighterButton = createElement({
         tagName: 'button',
-        className: 'preview-container___fight-btn'
+        className: 'preview-container___fight-btn custom_choose'
     });
     confirmFighterButton.innerText = `Confirm ${fighter.name}`;
-    const onClick = () => {
+    const onClickConfirm = () => {
+        confirmFighterButton.remove();
+        chooseAgainButton.remove();
         fighter.setConfirmed();
     };
-    confirmFighterButton.addEventListener('click', onClick, false);
-    return confirmFighterButton;
+    confirmFighterButton.addEventListener('click', onClickConfirm, false);
+    chooseAgainButton.addEventListener('click', onClickReload, false);
+    buttonsDivWrapper.append(confirmFighterButton, chooseAgainButton);
+    return buttonsDivWrapper;
 }
 
 export function createFighterPreview(fighter, position) {
