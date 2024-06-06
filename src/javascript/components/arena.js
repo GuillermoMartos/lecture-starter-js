@@ -1,5 +1,5 @@
 import createElement from '../helpers/domHelper';
-import { fight } from './fight';
+import fight from './fight';
 import { createFighterImage } from './fighterPreview';
 import versusImg from '../../../resources/versus.png';
 import showWinnerModal from './modal/winner';
