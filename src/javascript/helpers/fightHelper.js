@@ -1,21 +1,27 @@
 import controls from '../../constants/controls';
 import createElement from './domHelper';
 
-function createAttackImg() {
+const attackImgEndpoint = '../../../resources/attack.png';
+const defenseImgEndpoint = '../../../resources/defense.png';
+
+function createImg(source) {
     const attributes = {
         title: 'attack',
         alt: 'attackImg',
-        src: '../../../resources/attack.png'
+        src: source
     };
     const imgElement = createElement({
         tagName: 'img',
-        className: 'fighter-preview___img',
+        className: 'visual_fx',
         attributes
     });
     return imgElement;
 }
 
-const attackImg = createAttackImg();
+const attackImg = createImg(attackImgEndpoint);
+const defenseImg = createImg(defenseImgEndpoint);
+const specialAttackImg = createImg(attackImgEndpoint);
+specialAttackImg.classList.add('special_attack-img');
 
 function getHitPower(fighterPower) {
     // return hit power
@@ -70,16 +76,16 @@ export default function handleFightControls(playersContent) {
     const pressedKeys = new Set();
     let lastSpecialKeysMemo = [];
     let timerActive = false;
-    function addVisualsAttack(player) {
+    function addVisuals(player, visual) {
         if (player.classList.value.includes('left')) {
-            player.append(attackImg);
+            player.append(visual);
             setTimeout(() => {
-                player.removeChild(attackImg);
+                player.removeChild(visual);
             }, 100);
         } else {
-            playerBDiv.insertBefore(attackImg, player);
+            playerBDiv.insertBefore(visual, player);
             setTimeout(() => {
-                attackImg.remove();
+                visual.remove();
             }, 100);
         }
     }
@@ -99,26 +105,31 @@ export default function handleFightControls(playersContent) {
                 }, 1000);
             }
             if (controls.PlayerOneCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
+                addVisuals(playerAImg, specialAttackImg);
+                console.warn(specialAttackImg);
                 handleAttackScenario(firstFightingFighter, [secondFightingFighter, secondFighterHealthIndicator], true);
             }
             if (controls.PlayerTwoCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
+                addVisuals(playerBImg, specialAttackImg);
                 handleAttackScenario(secondFightingFighter, [firstFightingFighter, firstFighterHealthIndicator], true);
             }
         }
         if (!pressedKeys.has(event.code)) {
             switch (event.code) {
                 case controls.PlayerOneAttack:
-                    addVisualsAttack(playerAImg);
+                    addVisuals(playerAImg, attackImg);
                     handleAttackScenario(firstFightingFighter, [secondFightingFighter, secondFighterHealthIndicator]);
                     break;
                 case controls.PlayerTwoAttack:
-                    addVisualsAttack(playerBImg);
+                    addVisuals(playerBImg, attackImg);
                     handleAttackScenario(secondFightingFighter, [firstFightingFighter, firstFighterHealthIndicator]);
                     break;
                 case controls.PlayerOneBlock:
+                    addVisuals(playerAImg, defenseImg);
                     firstFightingFighter.activateDefending();
                     break;
                 case controls.PlayerTwoBlock:
+                    addVisuals(playerBImg, defenseImg);
                     secondFightingFighter.activateDefending();
                     break;
                 default:
