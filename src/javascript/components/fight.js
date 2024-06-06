@@ -4,7 +4,6 @@ import controls from '../../constants/controls';
 export async function fight(firstFighter, secondFighter) {
     const [firstFighterHealthIndicator, secondFighterHealthIndicator] =
         document.querySelectorAll('.arena___health-bar');
-    console.warn('divs!', firstFighterHealthIndicator, secondFighterHealthIndicator);
     const firstFightingFighter = createFigthingFigther(firstFighter);
     const secondFightingFighter = createFigthingFigther(secondFighter);
     handleFightControls({
@@ -53,7 +52,30 @@ function handleFightControls(playersContent) {
     const { firstFightingFighter, firstFighterHealthIndicator, secondFightingFighter, secondFighterHealthIndicator } =
         playersContent;
     const pressedKeys = new Set();
+    let lastSpecialKeysMemo = [];
+    let timerActive = false;
     function keyDownPressed(event) {
+        if (
+            controls.PlayerOneCriticalHitCombination.concat(controls.PlayerTwoCriticalHitCombination).includes(
+                event.code
+            )
+        ) {
+            lastSpecialKeysMemo.push(event.code);
+            if (!timerActive) {
+                timerActive = true;
+                // player got 1sec to press the critical hot combination
+                setTimeout(() => {
+                    lastSpecialKeysMemo = [];
+                    timerActive = false;
+                }, 1000);
+            }
+            if (controls.PlayerOneCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
+                handleAttackScenario(firstFightingFighter, [secondFightingFighter, secondFighterHealthIndicator], true);
+            }
+            if (controls.PlayerTwoCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
+                handleAttackScenario(secondFightingFighter, [firstFightingFighter, firstFighterHealthIndicator], true);
+            }
+        }
         if (!pressedKeys.has(event.code)) {
             switch (event.code) {
                 case controls.PlayerOneAttack:
@@ -67,10 +89,6 @@ function handleFightControls(playersContent) {
                     break;
                 case controls.PlayerTwoBlock:
                     secondFightingFighter.activateDefending();
-                    break;
-                case controls.PlayerOneCriticalHitCombination:
-                    break;
-                case controls.PlayerTwoCriticalHitCombination:
                     break;
                 default:
                     break;
@@ -120,18 +138,26 @@ function createFigthingFigther(fighter) {
     };
 }
 
-function handleAttackScenario(attacker, defenderContent) {
+function handleAttackScenario(attacker, defenderContent, specialHitAttak = false) {
     const [defender, defenderDivHealth] = defenderContent;
+    if (specialHitAttak) {
+        const result = attacker.getfighterAttackPower() * 2;
+        decreaseDefenderHealth([defender, defenderDivHealth], result);
+    }
     if (defender.getDefendingStatus() === false) {
         const result = getDamage(attacker.getfighterAttackPower(), defender.getfighterDefensePower());
         if (result > 0) {
-            console.warn(defender.getHealthStatus());
-            const healthPercentage = (defender.getHealthStatus() / defender.getStartingHealth()) * 100;
-            defenderDivHealth.style.width = `${healthPercentage}%`;
-            if (healthPercentage < 15) {
-                defenderDivHealth.style.backgroundColor = 'red';
-            }
-            defender.getHurt(result);
+            decreaseDefenderHealth([defender, defenderDivHealth], result);
         }
     }
+}
+
+function decreaseDefenderHealth(defenderContent, damageResult) {
+    const [defender, defenderDivHealth] = defenderContent;
+    const healthPercentage = ((defender.getHealthStatus() - damageResult) / defender.getStartingHealth()) * 100;
+    defenderDivHealth.style.width = `${healthPercentage}%`;
+    if (healthPercentage < 15) {
+        defenderDivHealth.style.backgroundColor = 'red';
+    }
+    defender.getHurt(damageResult);
 }
