@@ -79,8 +79,9 @@ export default async function renderArena(selectedFighters) {
     // - start the fight
     // - when fight is finished show winner
     fight(...selectedFighters)
-        .then(winner => {
-            showWinnerModal(winner);
+        .then(res => {
+            const [winner, player] = res;
+            showWinnerModal(winner, player);
         })
         .catch(err => {
             console.warn(err);

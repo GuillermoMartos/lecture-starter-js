@@ -18,11 +18,11 @@ export default async function fight(firstFighter, secondFighter) {
         const timer = setInterval(() => {
             if (firstFightingFighter.getHealthStatus() <= 0) {
                 clearInterval(timer);
-                resolve(secondFighter);
+                resolve([secondFighter, 'Player 2']);
             }
             if (secondFightingFighter.getHealthStatus() <= 0) {
-                resolve(firstFighter);
                 clearInterval(timer);
+                resolve([firstFighter, 'Player 1']);
             }
         }, 100);
     });
@@ -33,6 +33,7 @@ function createFigthingFigther(fighter) {
     const startHealthFighter = fighter.health;
     const { defense: fighterDefensePower, attack: fighterAttackPower } = fighter;
     let defending = false;
+    let specialPowerAllowed = true;
     return {
         getHealthStatus: () => {
             return fighterHealth;
@@ -57,6 +58,15 @@ function createFigthingFigther(fighter) {
         },
         getDefendingStatus: () => {
             return defending;
+        },
+        setWaitForSpecialPower: () => {
+            specialPowerAllowed = false;
+            setTimeout(() => {
+                specialPowerAllowed = true;
+            }, 10000);
+        },
+        getSpecialPowerStatus: () => {
+            return specialPowerAllowed;
         }
     };
 }

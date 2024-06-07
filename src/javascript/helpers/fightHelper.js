@@ -4,7 +4,7 @@ import createElement from './domHelper';
 const attackImgEndpoint = '../../../resources/attack.png';
 const defenseImgEndpoint = '../../../resources/defense.png';
 
-function createImg(source) {
+function createFightingImg(source) {
     const attributes = {
         title: 'attack',
         alt: 'attackImg',
@@ -18,9 +18,9 @@ function createImg(source) {
     return imgElement;
 }
 
-const attackImg = createImg(attackImgEndpoint);
-const defenseImg = createImg(defenseImgEndpoint);
-const specialAttackImg = createImg(attackImgEndpoint);
+const attackImg = createFightingImg(attackImgEndpoint);
+const defenseImg = createFightingImg(defenseImgEndpoint);
+const specialAttackImg = createFightingImg(attackImgEndpoint);
 specialAttackImg.classList.add('special_attack-img');
 
 function getHitPower(fighterPower) {
@@ -56,9 +56,11 @@ function decreaseDefenderHealth(defenderContent, damageResult) {
 function handleAttackScenario(attacker, defenderContent, specialHitAttak = false) {
     const [defender, defenderDivHealth] = defenderContent;
     if (specialHitAttak) {
+        attacker.setWaitForSpecialPower();
         const result = attacker.getfighterAttackPower() * 2;
         decreaseDefenderHealth([defender, defenderDivHealth], result);
     }
+
     if (defender.getDefendingStatus() === false) {
         const result = getDamage(attacker.getfighterAttackPower(), defender.getfighterDefensePower());
         if (result > 0) {
@@ -76,6 +78,7 @@ export default function handleFightControls(playersContent) {
     const pressedKeys = new Set();
     let lastSpecialKeysMemo = [];
     let timerActive = false;
+
     function addVisuals(player, visual) {
         if (player.classList.value.includes('left')) {
             player.append(visual);
@@ -90,6 +93,7 @@ export default function handleFightControls(playersContent) {
         }
     }
     function keyDownPressed(event) {
+        // check special hit use first
         if (
             controls.PlayerOneCriticalHitCombination.concat(controls.PlayerTwoCriticalHitCombination).includes(
                 event.code
@@ -105,15 +109,27 @@ export default function handleFightControls(playersContent) {
                 }, 1000);
             }
             if (controls.PlayerOneCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
-                addVisuals(playerAImg, specialAttackImg);
-                console.warn(specialAttackImg);
-                handleAttackScenario(firstFightingFighter, [secondFightingFighter, secondFighterHealthIndicator], true);
+                if (firstFightingFighter.getSpecialPowerStatus()) {
+                    addVisuals(playerAImg, specialAttackImg);
+                    handleAttackScenario(
+                        firstFightingFighter,
+                        [secondFightingFighter, secondFighterHealthIndicator],
+                        true
+                    );
+                }
             }
             if (controls.PlayerTwoCriticalHitCombination.every(key => lastSpecialKeysMemo.includes(key))) {
-                addVisuals(playerBImg, specialAttackImg);
-                handleAttackScenario(secondFightingFighter, [firstFightingFighter, firstFighterHealthIndicator], true);
+                if (secondFightingFighter.getSpecialPowerStatus()) {
+                    addVisuals(playerBImg, specialAttackImg);
+                    handleAttackScenario(
+                        secondFightingFighter,
+                        [firstFightingFighter, firstFighterHealthIndicator],
+                        true
+                    );
+                }
             }
         }
+        // handle rest of controls
         if (!pressedKeys.has(event.code)) {
             switch (event.code) {
                 case controls.PlayerOneAttack:
@@ -142,7 +158,6 @@ export default function handleFightControls(playersContent) {
         pressedKeys.delete(event.code);
     }
 
-    // Añadimos los listeners para keydown y keyup
     window.addEventListener('keydown', keyDownPressed);
     window.addEventListener('keyup', deletePressedKeyOnKeyUp);
 }
